@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Excuse Ball</title>
+<style>
+  :root {
+    --bg1: #0f3d2e;
+    --bg2: #082a20;
+    --ball: #d7e21f;
+    --ball-dark: #a9b50e;
+    --ink: #101a14;
+    --text: #f4f8e8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 30%, var(--bg1), var(--bg2) 70%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px; padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    overflow-x: hidden; user-select: none; -webkit-user-select: none;
+  }
+  /* court lines */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .12;
+    background:
+      linear-gradient(#fff,#fff) 50% 0/3px 100% no-repeat,
+      linear-gradient(#fff,#fff) 0 62%/100% 3px no-repeat;
+  }
+  h1 { margin: 0; font-size: clamp(1.4rem, 5.5vw, 2.2rem); text-align: center; letter-spacing: .02em; position: relative; }
+  .sub { margin: 4px 0 14px; opacity: .8; font-size: clamp(.9rem, 3.4vw, 1.05rem); text-align: center; position: relative; }
+
+  .stage { position: relative; width: min(86vw, 62vh, 420px); aspect-ratio: 1; cursor: pointer; }
+  .shadow {
+    position: absolute; left: 12%; right: 12%; bottom: -5%; height: 8%;
+    background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 70%);
+    filter: blur(4px);
+  }
+  .ball { position: absolute; inset: 0; border-radius: 50%; will-change: transform; }
+  .ball svg { width: 100%; height: 100%; display: block; }
+
+  .window {
+    position: absolute; left: 50%; top: 50%; width: 62%; aspect-ratio: 1; transform: translate(-50%,-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #27483a, #0b1a14 75%);
+    box-shadow: inset 0 0 0 4px rgba(0,0,0,.55), inset 0 8px 18px rgba(0,0,0,.6), 0 0 0 3px rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 9%;
+  }
+  .excuse {
+    font-weight: 800; line-height: 1.18; color: #f1ff6b; text-shadow: 0 2px 6px rgba(0,0,0,.6);
+    opacity: 0; transform: scale(.7); transition: opacity .45s ease, transform .45s cubic-bezier(.2,1.4,.4,1);
+  }
+  .excuse.show { opacity: 1; transform: scale(1); }
+  .prompt { position: absolute; font-weight: 700; color: #cfe3b0; opacity: .9; font-size: clamp(.95rem, 4vw, 1.25rem); padding: 0 12%; text-align: center; }
+  .prompt.hide { display: none; }
+
+  .shaking { animation: rattle .13s linear infinite; }
+  @keyframes rattle {
+    0%   { transform: translate(0,0) rotate(0); }
+    20%  { transform: translate(-9px, 5px) rotate(-7deg); }
+    40%  { transform: translate(8px, -6px) rotate(6deg); }
+    60%  { transform: translate(-7px, -4px) rotate(-5deg); }
+    80%  { transform: translate(9px, 6px) rotate(8deg); }
+    100% { transform: translate(0,0) rotate(0); }
+  }
+  .pop { animation: pop .5s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes pop { 0% { transform: scale(.94); } 100% { transform: scale(1); } }
+
+  .meta { margin-top: 22px; min-height: 64px; text-align: center; position: relative; }
+  .tag { display: inline-block; font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,.12); opacity: 0; transition: opacity .4s; }
+  .believe { margin-top: 8px; font-size: .95rem; opacity: 0; transition: opacity .4s; }
+  .tag.show, .believe.show { opacity: .95; }
+  .believe b { color: #ff8a7a; }
+
+  button.go {
+    margin-top: 6px; padding: 14px 28px; border: 0; border-radius: 99px; font-size: 1.05rem; font-weight: 800;
+    background: var(--ball); color: var(--ink); box-shadow: 0 6px 0 var(--ball-dark), 0 10px 20px rgba(0,0,0,.4); cursor: pointer;
+  }
+  button.go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ball-dark), 0 4px 10px rgba(0,0,0,.4); }
+  button.go:disabled { opacity: .6; }
+
+  .counter { margin-top: 18px; font-size: .85rem; opacity: .7; text-align: center; }
+  .counter b { font-variant-numeric: tabular-nums; }
+  .muted { position: fixed; top: max(10px, env(safe-area-inset-top)); right: 12px; background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 99px; padding: 8px 12px; font-size: 1rem; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) { .shaking { animation-duration: .3s; } }
+</style>
+</head>
+<body>
+  <button class="muted" id="mute" aria-label="Toggle sound">🔊</button>
+  <h1 id="title">Kent's Excuse Ball</h1>
+  <p class="sub">Tap the ball (or shake your phone) for today's reason you can't play pickleball.</p>
+
+  <div class="stage" id="stage" role="button" tabindex="0" aria-label="Shake the ball for an excuse">
+    <div class="shadow"></div>
+    <div class="ball" id="ball">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <radialGradient id="g" cx="35%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#f3fb6a"/>
+            <stop offset=".55" stop-color="#d7e21f"/>
+            <stop offset="1" stop-color="#97a30a"/>
+          </radialGradient>
+          <radialGradient id="h" cx="40%" cy="35%" r="70%">
+            <stop offset="0" stop-color="#6d7608"/>
+            <stop offset="1" stop-color="#4d5405"/>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="98" fill="url(#g)"/>
+        <g id="holes" fill="url(#h)" opacity=".85"></g>
+        <ellipse cx="68" cy="52" rx="34" ry="16" fill="#fff" opacity=".28" transform="rotate(-28 68 52)"/>
+      </svg>
+      <div class="window">
+        <div class="prompt" id="prompt">Tap to ask the ball</div>
+        <div class="excuse" id="excuse"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="tag" id="tag"></div>
+    <div class="believe" id="believe"></div>
+  </div>
+  <button class="go" id="go">Shake it</button>
+  <div class="counter">Excuses generated: <b id="count">0</b> &nbsp;·&nbsp; Pickleball games played: <b>0</b></div>
+
+<script>
+(() => {
+  // ---------- Config ----------
+  const params = new URLSearchParams(location.search);
+  const name = (params.get("name") || "Kent").trim().slice(0, 24) || "Kent";
+  document.getElementById("title").textContent = name + "'s Excuse Ball";
+  document.title = name + "'s Excuse Ball";
+
+  const EXCUSES = [
+    ["Mercury is in retrograde.", "Astrology"],
+    ["I've got a date with a vodka and a barstool.", "Liquid Lunch"],
+    ["It's too sunny. Or too cloudy. One of those.", "Weather"],
+    ["My good pickleball jumpsuit is in the hamper.", "Wardrobe"],
+    ["The wife said I can't play today. I get my pants back tomorrow.", "Family"],
+    ["I think I'm allergic to pickles. Or I have a genital wart.", "Medical"],
+    ["I've got a painful hangnail.", "Medical"],
+    ["My IBS is really flaring up today.", "Medical"],
+    ["One of my hemorrhoids had a blowout.", "Medical"],
+    ["The moon is in the Seventh House.", "Astrology"],
+    ["I pulled my pork.", "Medical"],
+    ["My stepson's wife's sister's daughter might stop by.", "Family"],
+    ["My dog ate my paddle. And I will not borrow one.", "Equipment"]
+  ];
+  const BELIEVE = [
+    "Nobody has ever believed this.",
+    "Even the ball doesn't believe this.",
+    "Your friends have heard this one. Twice.",
+    "Verified by absolutely no one.",
+    "A court of law would laugh.",
+    "Even you don't believe this one.",
+    "Submitted without evidence, as always."
+  ];
+
+  // shuffle-bag: no repeats until every excuse has been shown
+  let bag = [], last = -1;
+  function nextExcuse() {
+    if (!bag.length) {
+      bag = EXCUSES.map((_, i) => i);
+      for (let i = bag.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [bag[i], bag[j]] = [bag[j], bag[i]]; }
+      if (bag[bag.length - 1] === last && bag.length > 1) bag.unshift(bag.pop()); // avoid immediate repeat across refills
+    }
+    last = bag.pop();
+    return EXCUSES[last];
+  }
+
+  // ---------- Pickleball holes ----------
+  const holes = document.getElementById("holes");
+  const NS = "http://www.w3.org/2000/svg";
+  function hole(x, y, r) { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", r); holes.appendChild(c); }
+  // ring pattern: sunflower-style spread, skip centre (the window covers it)
+  const GOLD = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 1; i < 120; i++) {
+    const rad = 94 * Math.sqrt(i / 120), a = i * GOLD;
+    const x = 100 + rad * Math.cos(a), y = 100 + rad * Math.sin(a);
+    const edge = 1 - Math.hypot(x - 100, y - 100) / 98;       // shrink toward rim for a sphere feel
+    if (Math.hypot(x - 100, y - 100) > 60) hole(x.toFixed(1), y.toFixed(1), (2 + 3.3 * Math.min(1, edge * 3.2)).toFixed(1));
+  }
+
+  // ---------- Audio ----------
+  let ctx = null, muted = false, laughFile = null;
+  const laughEl = new Audio("laugh.mp3");
+  laughEl.preload = "auto";
+  fetch("laugh.mp3", { method: "HEAD" }).then(r => { laughFile = r.ok; }).catch(() => { laughFile = false; });
+
+  function ac() {
+    if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (A) ctx = new A(); }
+    if (ctx && ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+  function pock(t0, vol = 1) {
+    const c = ac(); if (!c || muted) return;
+    const t = c.currentTime + t0;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "triangle"; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(380, t + .05);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.55 * vol, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + .09);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + .1);
+  }
+  function synthLaugh() {
+    const c = ac(); if (!c || muted) return;
+    const t0 = c.currentTime + .02, n = 7;
+    for (let i = 0; i < n; i++) {
+      const t = t0 + i * .17;
+      const f = 250 - i * 12 + (i % 2 ? 18 : 0);                    // falling pitch, wobble
+      const o = c.createOscillator(); o.type = "sawtooth";
+      o.frequency.setValueAtTime(f * 1.15, t); o.frequency.exponentialRampToValueAtTime(f, t + .12);
+      const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 3;
+      bp.frequency.setValueAtTime(900, t); bp.frequency.linearRampToValueAtTime(1300, t + .12);   // "ha" formant
+      const g = c.createGain();
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.5 - i * .035, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .14);
+      o.connect(bp).connect(g).connect(c.destination); o.start(t); o.stop(t + .16);
+    }
+  }
+  function laugh() {
+    if (muted) return;
+    if (laughFile) { laughEl.currentTime = 0; laughEl.play().catch(synthLaugh); }
+    else synthLaugh();
+  }
+
+  // ---------- Shake logic ----------
+  const $ = id => document.getElementById(id);
+  const ball = $("ball"), excuseEl = $("excuse"), promptEl = $("prompt"), tagEl = $("tag"), believeEl = $("believe"), goBtn = $("go");
+  let busy = false, count = 0;
+
+  function fit(text) {
+    const len = text.length;
+    excuseEl.style.fontSize = (len < 30 ? "clamp(1.1rem,5.4vw,1.9rem)" : len < 50 ? "clamp(1rem,4.6vw,1.6rem)" : "clamp(.9rem,3.9vw,1.35rem)");
+  }
+
+  function shake() {
+    if (busy) return;
+    busy = true; goBtn.disabled = true;
+    ac();
+    promptEl.classList.add("hide");
+    excuseEl.classList.remove("show"); tagEl.classList.remove("show"); believeEl.classList.remove("show");
+    ball.classList.remove("pop"); ball.classList.add("shaking");
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 60]);
+    [0, .13, .27, .4, .55, .7, .85, 1.0].forEach((t, i) => pock(t, .6 + (i % 3) * .2));
+
+    setTimeout(() => {
+      ball.classList.remove("shaking"); void ball.offsetWidth; ball.classList.add("pop");
+      const [text, cat] = nextExcuse();
+      excuseEl.textContent = text; fit(text);
+      tagEl.textContent = cat;
+      const pct = (Math.random() * 3) | 0;                         // 0-2%
+      believeEl.innerHTML = "Believability: <b>" + pct + "%</b> &mdash; " + BELIEVE[Math.random() * BELIEVE.length | 0];
+      excuseEl.classList.add("show"); tagEl.classList.add("show"); believeEl.classList.add("show");
+      count++; $("count").textContent = count;
+      pock(0, 1);
+      setTimeout(laugh, 250);
+      busy = false; goBtn.disabled = false;
+    }, 1500);
+  }
+
+  $("stage").addEventListener("click", shake);
+  $("stage").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); shake(); } });
+  goBtn.addEventListener("click", async () => {
+    // iOS needs a permission request, triggered from a tap, before shake events work
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function" && !motionOn) {
+      try { if ((await DeviceMotionEvent.requestPermission()) === "granted") enableMotion(); } catch (e) {}
+    } else if (!motionOn) enableMotion();
+    shake();
+  });
+  $("mute").addEventListener("click", () => { muted = !muted; $("mute").textContent = muted ? "🔇" : "🔊"; });
+
+  // phone shake detection
+  let motionOn = false, lastShake = 0, lx = 0, ly = 0, lz = 0;
+  function enableMotion() {
+    if (motionOn) return; motionOn = true;
+    window.addEventListener("devicemotion", e => {
+      const a = e.accelerationIncludingGravity; if (!a) return;
+      const d = Math.abs(a.x - lx) + Math.abs(a.y - ly) + Math.abs(a.z - lz);
+      lx = a.x; ly = a.y; lz = a.z;
+      const now = Date.now();
+      if (d > 38 && now - lastShake > 2500) { lastShake = now; shake(); }
+    });
+  }
+  if (!(typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function")) enableMotion();
+})();
+</script>
+</body>
+</html>
