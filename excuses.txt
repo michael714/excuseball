@@ -13,6 +13,6 @@ Medical | I've got a painful hangnail.
 Medical | My IBS is really flaring up today.
 Medical | One of my hemorrhoids had a blowout.
 Astrology | The moon is in the Seventh House.
-Medical | I pulled my pork.
+Medical | I pulled my pork loin.
 Family | My stepson's wife's sister's daughter might stop by.
 Equipment | My dog ate my paddle. And I will not borrow one.
