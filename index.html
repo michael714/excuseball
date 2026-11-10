@@ -136,21 +136,23 @@
   document.getElementById("title").textContent = name + "'s Excuse Ball";
   document.title = name + "'s Excuse Ball";
 
-  const EXCUSES = [
+  // Excuses live in excuses.txt ("Category | Excuse" per line). This short list is only a
+  // fallback in case the file can't be loaded (for example, opening index.html straight from disk).
+  let EXCUSES = [
     ["Mercury is in retrograde.", "Astrology"],
-    ["I've got a date with a vodka and a barstool.", "Liquid Lunch"],
-    ["It's too sunny. Or too cloudy. One of those.", "Weather"],
-    ["My good pickleball jumpsuit is in the hamper.", "Wardrobe"],
-    ["The wife said I can't play today. I get my pants back tomorrow.", "Family"],
-    ["I think I'm allergic to pickles. Or I have a genital wart.", "Medical"],
     ["I've got a painful hangnail.", "Medical"],
-    ["My IBS is really flaring up today.", "Medical"],
-    ["One of my hemorrhoids had a blowout.", "Medical"],
-    ["The moon is in the Seventh House.", "Astrology"],
-    ["I pulled my pork.", "Medical"],
-    ["My stepson's wife's sister's daughter might stop by.", "Family"],
     ["My dog ate my paddle. And I will not borrow one.", "Equipment"]
   ];
+  function parseExcuses(txt) {
+    return txt.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith("#")).map(l => {
+      const i = l.indexOf("|");
+      return i === -1 ? [l, "Excuse"] : [l.slice(i + 1).trim(), l.slice(0, i).trim() || "Excuse"];
+    }).filter(e => e[0]);
+  }
+  fetch("excuses.txt", { cache: "no-cache" })
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(t => { const list = parseExcuses(t); if (list.length) { EXCUSES = list; bag = []; } })
+    .catch(() => {});
   const BELIEVE = [
     "Nobody has ever believed this.",
     "Even the ball doesn't believe this.",

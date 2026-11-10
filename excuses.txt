@@ -1,0 +1,18 @@
+# The Excuse Ball's excuse list.
+# One excuse per line, in the form:   Category | Excuse text
+# Lines starting with # and blank lines are ignored.
+# If you leave off the "Category |" part, the tag will just say "Excuse".
+
+Astrology | Mercury is in retrograde.
+Liquid Lunch | I've got a date with a vodka and a barstool.
+Weather | It's too sunny. Or too cloudy. One of those.
+Wardrobe | My good pickleball jumpsuit is in the hamper.
+Family | The wife said I can't play today. I get my pants back tomorrow.
+Medical | I think I'm allergic to pickles. Or I have a genital wart.
+Medical | I've got a painful hangnail.
+Medical | My IBS is really flaring up today.
+Medical | One of my hemorrhoids had a blowout.
+Astrology | The moon is in the Seventh House.
+Medical | I pulled my pork.
+Family | My stepson's wife's sister's daughter might stop by.
+Equipment | My dog ate my paddle. And I will not borrow one.
