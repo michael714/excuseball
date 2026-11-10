@@ -4,15 +4,23 @@
 # If you leave off the "Category |" part, the tag will just say "Excuse".
 
 Astrology | Mercury is in retrograde.
-Liquid Lunch | I've got a date with a vodka and a barstool.
+Hydration | I've got a date with a vodka and a barstool.
 Weather | It's too sunny. Or too cloudy. One of those.
 Wardrobe | My good pickleball jumpsuit is in the hamper.
 Family | The wife said I can't play today. I get my pants back tomorrow.
 Medical | I think I'm allergic to pickles. Or I have a genital wart.
-Medical | I've got a painful hangnail.
+Medical | I've got bone spurs that jingle jangle.
 Medical | My IBS is really flaring up today.
 Medical | One of my hemorrhoids had a blowout.
 Astrology | The moon is in the Seventh House.
 Medical | I pulled my pork loin.
 Family | My stepson's wife's sister's daughter might stop by.
-Equipment | My dog ate my paddle. And I will not borrow one.
+Equipment | My dog ate my paddle.
+Medical | I have an owie.
+Travel | I have to fly somewhere.  Don't tell my wife.
+Medical | Bee sting.  Tongue is swollen again.
+Conspiracy | Too many chemtrails today.
+Holiday | It's election day.  Somewhere.
+Hydration | It's happy hour!
+Hydration | They need me at Ric's.
+Catastrophe | My Uber died.
