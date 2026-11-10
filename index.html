@@ -149,7 +149,8 @@
       return i === -1 ? [l, "Excuse"] : [l.slice(i + 1).trim(), l.slice(0, i).trim() || "Excuse"];
     }).filter(e => e[0]);
   }
-  fetch("excuses.txt", { cache: "no-cache" })
+  // The timestamp makes every load look like a brand-new URL, so phones and CDNs can't serve a stale copy.
+  fetch("excuses.txt?v=" + Date.now(), { cache: "no-store" })
     .then(r => r.ok ? r.text() : Promise.reject())
     .then(t => { const list = parseExcuses(t); if (list.length) { EXCUSES = list; bag = []; } })
     .catch(() => {});
